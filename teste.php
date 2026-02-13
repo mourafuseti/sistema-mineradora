@@ -1,0 +1,1 @@
+<?php echo "O sistema está funcionando!"; ?>

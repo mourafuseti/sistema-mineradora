@@ -2,28 +2,50 @@
 session_start();
 require 'config/conexao.php';
 
-$email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-$senha = $_POST['senha'];
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $email = trim($_POST['email']);
+    $senha = trim($_POST['senha']);
 
-// Busca usuário pelo email
-$stmt = $pdo->prepare("SELECT * FROM funcionarios WHERE email = :email");
-$stmt->execute(['email' => $email]);
-$user = $stmt->fetch();
+    $stmt = $pdo->prepare("SELECT * FROM funcionarios WHERE email = ?");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
 
-if ($user && password_verify($senha, $user['senha_hash'])) {
-    $_SESSION['usuario_id'] = $user['id'];
-    $_SESSION['usuario_nome'] = $user['nome'];
-    $_SESSION['cargo'] = $user['cargo']; // Importante para o Auth
+    if ($user && password_verify($senha, $user['senha_hash'])) {
+        
+        $_SESSION['usuario_id'] = $user['id'];
+        $_SESSION['usuario_nome'] = $user['nome'];
+        $_SESSION['cargo'] = $user['cargo'];
 
-    // Redirecionamento baseado no Cargo
-    if ($user['cargo'] == 'Administrador' || $user['cargo'] == 'Gerente') {
-        header("Location: modules/admin/dashboard.php");
-    } elseif ($user['cargo'] == 'Balanca') {
-        header("Location: modules/balanca/pesagem.php");
+        // Grava o Log de Entrada
+        try {
+            if(function_exists('registrarLog')) {
+                registrarLog($pdo, "Fez login no portal");
+            } else {
+                $agora = date('Y-m-d H:i:s');
+                $pdo->prepare("INSERT INTO logs_sistema (usuario_id, acao, data_hora) VALUES (?, ?, ?)")->execute([$user['id'], "Fez login no portal", $agora]);
+            }
+        } catch (Exception $e) {}
+
+        // 🚀 REDIRECIONAMENTO INTELIGENTE POR CARGO
+        if ($user['cargo'] == 'Frentista') {
+            header("Location: modules/abastecimento/index.php");
+        } elseif ($user['cargo'] == 'Balanca') {
+            header("Location: modules/balanca/pesagem.php");
+        } elseif ($user['cargo'] == 'Mecanico') {
+            header("Location: modules/manutencao/index.php");
+        } else {
+            // Administrador e Gerente vão para o Painel Completo
+            header("Location: modules/admin/dashboard.php");
+        }
+        exit;
+        
     } else {
-        echo "Seu perfil não tem acesso ao sistema web. Use o App/QR Code.";
+        $_SESSION['erro_login'] = "Credenciais inválidas. Verifique seu e-mail e senha.";
+        header("Location: index.php");
+        exit;
     }
 } else {
-    echo "<script>alert('Login inválido!'); window.location='index.php';</script>";
+    header("Location: index.php");
+    exit;
 }
 ?>

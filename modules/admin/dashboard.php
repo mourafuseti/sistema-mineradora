@@ -120,7 +120,7 @@ $cargo = $_SESSION['cargo'];
 
             <?php if(in_array($cargo, ['Administrador', 'Gerente'])): ?>
                 <div class="col-12 mt-5">
-                    <div class="section-title text-secondary"><i class="bi bi-bar-chart-fill me-2"></i> Relatórios e Históricos</div>
+                    <div class="section-title text-secondary"><i class="bi bi-bar-chart-fill me-2"></i> Relatórios e Segurança</div>
                 </div>
 
                 <div class="col-md-3">
@@ -154,12 +154,22 @@ $cargo = $_SESSION['cargo'];
                 </div>
                 
                 <?php if($cargo == 'Administrador'): ?>
-                 <div class="col-md-3">
-                    <div class="card card-dashboard h-100 bg-dark text-white shadow-sm">
+                <div class="col-md-3 mt-4 mt-md-0">
+                    <div class="card card-dashboard h-100 bg-dark text-white shadow-sm border-0">
                         <div class="card-body text-center">
                             <i class="bi bi-shield-check display-5 text-light mb-2"></i>
                             <h6 class="card-title fw-bold">Logs de Auditoria</h6>
                             <a href="../admin/logs.php" class="btn btn-sm btn-light w-100 stretched-link mt-2">Ver Acessos</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mt-4">
+                    <div class="card card-dashboard h-100 bg-danger text-white shadow-sm border-0">
+                        <div class="card-body text-center">
+                            <i class="bi bi-database-fill-down display-5 text-light mb-2"></i>
+                            <h6 class="card-title fw-bold">Backup do Sistema</h6>
+                            <a href="../admin/backup.php" class="btn btn-sm btn-light text-danger fw-bold w-100 stretched-link mt-2">Gerenciar</a>
                         </div>
                     </div>
                 </div>

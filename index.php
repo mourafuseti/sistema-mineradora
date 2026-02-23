@@ -1,8 +1,17 @@
 <?php
 session_start();
-// Se já estiver logado, manda direto para o dashboard
+// Se já estiver logado, manda direto para o dashboard inteligente
 if (isset($_SESSION['usuario_id'])) {
-    header("Location: modules/admin/dashboard.php");
+    require 'config/conexao.php';
+    // Busca o cargo atualizado para redirecionar corretamente
+    $stmt = $pdo->prepare("SELECT cargo FROM funcionarios WHERE id = ?");
+    $stmt->execute([$_SESSION['usuario_id']]);
+    $cargo = $stmt->fetchColumn();
+
+    if ($cargo == 'Frentista') header("Location: modules/abastecimento/index.php");
+    elseif ($cargo == 'Balanca') header("Location: modules/balanca/pesagem.php");
+    elseif ($cargo == 'Mecanico') header("Location: modules/manutencao/index.php");
+    else header("Location: modules/admin/dashboard.php");
     exit;
 }
 ?>
@@ -11,12 +20,11 @@ if (isset($_SESSION['usuario_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mineração BR - Portal Corporativo</title>
+    <title>Mineração XYZ - Portal Corporativo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     
     <style>
-        /* Importando fonte moderna do Google */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
 
         body {
@@ -25,22 +33,20 @@ if (isset($_SESSION['usuario_id'])) {
             overflow-x: hidden;
         }
 
-        /* Lado Esquerdo - Imagem de Fundo Estilo */
+        /* Lado Esquerdo - Imagem de Fundo */
         .bg-mining {
-            /* Coloque uma imagem bonita de mineração na pasta assets/img/ ou use este link provisório */
-            background-image: url('assets/img/fundo-mineracao.png');
+            background-image: url('https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
             position: relative;
             height: 100vh;
         }
 
-        /* Película escura sobre a imagem para destacar o texto */
         .bg-mining::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, rgba(0, 51, 32, 0.85) 0%, rgba(0, 0, 0, 0.6) 100%); /* Tons de verde escuro */
+            background: linear-gradient(135deg, rgba(0, 51, 32, 0.85) 0%, rgba(0, 0, 0, 0.6) 100%);
             z-index: 1;
         }
 
@@ -54,7 +60,7 @@ if (isset($_SESSION['usuario_id'])) {
         .hero-content h1 {
             font-size: 3.5rem;
             font-weight: 700;
-            color: #ffc107; /* Amarelo ouro */
+            color: #ffc107;
             text-transform: uppercase;
             letter-spacing: 2px;
         }
@@ -65,7 +71,7 @@ if (isset($_SESSION['usuario_id'])) {
             opacity: 0.9;
         }
 
-        /* Lado Direito - Formulário de Login */
+        /* Lado Direito - Painel de Login */
         .login-panel {
             height: 100vh;
             display: flex;
@@ -75,12 +81,14 @@ if (isset($_SESSION['usuario_id'])) {
             box-shadow: -10px 0 30px rgba(0,0,0,0.1);
             position: relative;
             z-index: 3;
+            overflow-y: auto; /* Permite rolar se a tela for pequena */
         }
 
         .login-box {
             width: 100%;
             max-width: 400px;
             padding: 2rem;
+            margin-bottom: 3rem; /* Espaço para o footer não encostar */
         }
 
         .logo-login {
@@ -125,6 +133,36 @@ if (isset($_SESSION['usuario_id'])) {
             color: #ffc107;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Botão do App Android */
+        .btn-android {
+            border: 2px solid #3ddc84; /* Cor oficial do Android */
+            color: #004d30;
+            padding: 0.6rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .btn-android:hover {
+            background-color: #3ddc84;
+            color: #111;
+        }
+
+        .btn-android i {
+            font-size: 1.3rem;
+            color: #3ddc84;
+            margin-right: 8px;
+            transition: color 0.3s;
+        }
+
+        .btn-android:hover i {
+            color: #111;
         }
 
         .footer-login {
@@ -192,10 +230,20 @@ if (isset($_SESSION['usuario_id'])) {
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-login w-100">
+                        <button type="submit" class="btn btn-login w-100 mb-4">
                             ENTRAR NO SISTEMA <i class="bi bi-arrow-right-circle ms-2"></i>
                         </button>
                     </form>
+
+                    <div class="position-relative text-center mb-4">
+                        <hr class="text-muted">
+                        <span class="position-absolute top-50 start-50 translate-middle bg-white px-2 small text-muted">Acesso Operacional</span>
+                    </div>
+
+                    <a href="app/MineradoraApp.apk" download class="btn-android w-100">
+                        <i class="bi bi-android2"></i> Baixar App para Android
+                    </a>
+
                 </div>
                 
                 <div class="footer-login">
